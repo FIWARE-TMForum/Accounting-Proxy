@@ -49,11 +49,11 @@ var subscribeContext = function (req, res) {
 };
 
 var unsubscribeContext = function (req, res) {
-    res.status(200).json(data.cancelSubscriptionResp)
+    res.status(200).json(data.cancelSubscriptionResp);
 };
 
 var unsubscribeContextDelete = function (req, res) {
-    res.status(200).json(data.cancelSubscriptionResp)
+    res.status(200).json(data.cancelSubscriptionResp);
 };
 
 var updateContextSubscription = function (req, res) {
@@ -83,10 +83,10 @@ var updateSubscription = function (req, res) {
 
 var usageSpecificationHandler = function (req, res) {
     if (req.body.name === 'call') {
-        req.body['href'] = 'http://localhost:9040/usageSpecification/1';
+        req.body['href'] = data.DEFAULT_HREFS[0];
         res.status(201).json(req.body);
     } else {
-        req.body['href'] = 'http://localhost:9040/usageSpecification/2';
+        req.body['href'] = data.DEFAULT_HREFS[1];
         res.status(201).json(req.body);
     }
 };

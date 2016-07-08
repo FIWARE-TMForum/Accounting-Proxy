@@ -2,7 +2,7 @@ var data = {
 
     DEFAULT_TOKEN: 'token',
     DEFAULT_UNIT: 'megabyte',
-    DEFAULT_HREF: 'http://example:8080/api',
+    DEFAULT_HREFS: ['http://localhost:9040/usageSpecification/1', 'http://localhost:9040/usageSpecification/2'],
     DEFAULT_PUBLIC_PATHS: ['/public1', '/public2'],
     DEFAULT_APP_IDS: ['appId1', 'appId2'],
     DEFAULT_URLS: ['http://example:8080/path1', 'http://example:8080/path2'],
@@ -13,7 +13,6 @@ var data = {
     DEFAULT_NOTIFICATION_URL: 'http://notification/url',
     DEFAULT_ORDER_IDS: ['orderId1', 'orderId2'],
     DEFAULT_PRODUCT_IDS: ['productId1', 'productId2'],
-    DEFAULT_HREF: 'http://localhost/DSUsageManagement/1',
     DEFAULT_USER_ID: 'userId',
     DEFAULT_REQ_PATH: '/public/service',
     DEFAULT_PORT: 9000,
@@ -41,7 +40,8 @@ data.DEFAULT_SUBSCRIPTION_v1 = {
     subscriptionId: data.DEFAULT_SUBS_ID,
     unit: data.DEFAULT_UNIT,
     notificationUrl: data.DEFAULT_URLS[0],
-    expires: null
+    expires: null,
+    version: 'v1'
 };
 
 data.DEFAULT_SUBSCRIPTION_v2 = {
@@ -49,7 +49,8 @@ data.DEFAULT_SUBSCRIPTION_v2 = {
     subscriptionId: data.DEFAULT_SUBS_ID,
     unit: data.DEFAULT_UNIT,
     notificationUrl: data.DEFAULT_URLS[0],
-    expires: data.DEFAULT_EXPIRES
+    expires: data.DEFAULT_EXPIRES,
+    version: 'v2'
 };
 
 data.DEFAULT_SUBS_RESPONSE = {
@@ -99,8 +100,9 @@ data.DEFAULT_NOTIFICATION_INFO = [{
 data.DEFAULT_ADMINISTRATION_PATHS = {
     keys: '/accounting_proxy/keys',
     units: '/accounting_proxy/units',
-    newBuy: '/accounting_proxy/buys',
-    checkURL: '/accounting_proxy/urls'
+    newBuy: '/accounting_proxy/newBuy',
+    checkURL: '/accounting_proxy/urls',
+    deleteBuy: '/accounting_proxy/deleteBuy'
 };
 
 data.DEFAULT_ROLES = {
@@ -133,6 +135,16 @@ data.DEFAULT_BUY_INFORMATION = [{
     customer: data.DEFAULT_USER_ID,
     unit: data.DEFAULT_UNIT,
     recordType: data.DEFAULT_RECORD_TYPE
+}];
+
+data.DEFAULT_DELETE_BUY_INFORMATION = [{
+    orderId: data.DEFAULT_ORDER_IDS[0],
+    productId: data.DEFAULT_PRODUCT_IDS[0],
+    customer: data.DEFAULT_USER_ID
+}, {
+    orderId: data.DEFAULT_ORDER_IDS[1],
+    productId: data.DEFAULT_PRODUCT_IDS[1],
+    customer: data.DEFAULT_USER_ID
 }];
 
 data.room1 = {
