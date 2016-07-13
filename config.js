@@ -94,13 +94,20 @@ config.resources = {
 // Configures the administration paths for the administration API used by the WStore.
 config.api = {
 
+    // Enable the verification of certificates for administration requests (newBuy, deleteBuy and checkURL).
+    verifyCert: true,
+
     administration_paths: {
         keys: '/accounting_proxy/keys',
         units: '/accounting_proxy/units',
         newBuy: '/accounting_proxy/newBuy',
         checkURL: '/accounting_proxy/urls',
         deleteBuy: '/accounting_proxy/deleteBuy'
-    }
+    },
+
+    certFile: 'ssl/server1.pem',
+    certKeyFile: 'ssl/server1.key',
+    cas: ['ssl/fake_ca.pem']
 };
 
 // OAuth2 configuration.
