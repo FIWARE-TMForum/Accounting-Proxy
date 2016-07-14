@@ -22,7 +22,7 @@ var FIWAREStrategy_mock = util.getStrategyMock(userProfile);
 var DEFAULT_URL = 'http://localhost:' + testConfig.test_endpoint_port;
 var DEFAULT_TYPE = data.DEFAULT_IS_CB_SERVICE;
 
-var configMock = util.getConfigMock(true);
+var configMock = util.getConfigMock(true, false);
 
 var mocker = function (database,done) {
 
@@ -315,6 +315,8 @@ describe('Testing the accounting API. Orion Context-Broker requests', function (
     async.eachSeries(testConfig.databases, function (database, taskCallback) {
             
         describe('with database ' + database, function () {
+
+            this.timeout(4000);
 
             // Clear the database and mock dependencies
             beforeEach(function (done) {

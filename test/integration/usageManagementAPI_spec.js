@@ -9,7 +9,7 @@ var assert = require('assert'),
 var server, db, notifierMock;
 var databaseName = 'testDB_usageAPI.sqlite';
 
-var configMock = util.getConfigMock(false);
+var configMock = util.getConfigMock(false, false);
 
 // Necessary in order to avoid ERRADDRINUSE when call listening more than once
 var appMock = {
@@ -108,6 +108,8 @@ describe('Testing the usage notifier', function () {
     async.eachSeries(testConfig.databases, function (database, taskCallback) {
 
         describe('with database ' + database, function () {
+
+            this.timeout(4000);
 
             // Clear the database and mock dependencies
             beforeEach(function (done) {

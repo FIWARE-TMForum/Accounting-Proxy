@@ -28,7 +28,9 @@ var mocker = function (implementations, callback) {
         var config = implementations.config ? implementations.config : DEFAULT_CONFIG;
         if (implementations.config) {
             for (var key in DEFAULT_CONFIG) {
-                config[key] = DEFAULT_CONFIG[key]
+                if (config[key] === undefined) {
+                    config[key] = DEFAULT_CONFIG[key]
+                }
             };
         }
 
@@ -41,6 +43,15 @@ var mocker = function (implementations, callback) {
         var logger = implementations.logger ? implementations.logger : {};
         logger.transports = {
             File: function (options) {}
+        };
+
+        var utilMock = {
+            getBody: function (req, res, callback) {
+                return callback();
+            },
+            validateCert: function (req, res, callback) {
+                return callback();
+            }
         };
 
         var server = proxyquire('../../server', {
@@ -59,7 +70,10 @@ var mocker = function (implementations, callback) {
             'express-winston': {logger: function (transports) {} },
             './orion_context_broker/cbHandler': implementations.contextBroker ? implementations.contextBroker : {},
             './accounter': implementations.accounter ? implementations.accounter : {},
-            './OAuth2_authentication': implementations.authenticator ? implementations.authenticator : {}
+            './OAuth2_authentication': implementations.authenticator ? implementations.authenticator : {},
+            'https': implementations.https ? implementations.https : {},
+            'fs': implementations.fs ? implementations.fs : {},
+            './util': utilMock
         });
 
         return callback(server, spies);
@@ -68,10 +82,15 @@ var mocker = function (implementations, callback) {
 
 describe('Testing Server', function () {
 
-    var testInitAndStop = function (initErr, unit, notifyErr, notifyErrCron, stopErr, getAccModules, done) {
+    var testInitAndStop = function (initErr, unit, notifyErr, notifyErrCron, stopErr, getAccModules, enableHttps, done) {
 
             var port = data.DEFAULT_PORT;
             var notifyCallCount = 0;
+            var mockConfig = util.getConfigMock(true, enableHttps);
+            mockConfig.database.type = './db';
+            mockConfig.modules = {
+                accounting: [unit]
+            };
 
             var implementations = {
                 db: {
@@ -90,17 +109,7 @@ describe('Testing Server', function () {
                         }
                     }
                 },
-                config: {
-                    resources: {
-                        contextBroker: true
-                    },
-                    modules: {
-                        accounting: [unit]
-                    },
-                    usageAPI: {
-                        schedule: '00 00 * * *'
-                    }
-                },
+                config: mockConfig,
                 cron: {
                     scheduleJob: function (schedule, callback) {
                         return callback(true)
@@ -122,11 +131,29 @@ describe('Testing Server', function () {
                     close: function (callback) {
                         return callback(stopErr);
                     }
+                },
+                https: {
+                    createServer: function (opts, app) {
+                        return app;
+                    }
+                },
+                fs: {
+                    readFileSync: function (file) {
+                        return 'file content';
+                    }
                 }
             };
 
             implementations.app.listen = function (port) {
                 return implementations.server;
+            };
+
+            var options = {
+                cert: 'file content',
+                key: 'file content',
+                ca: 'file content',
+                requestCert: true,
+                rejectUnauthorized: false
             };
 
             mocker(implementations, function (server, spies) {
@@ -149,6 +176,14 @@ describe('Testing Server', function () {
                         assert(spies.cron.scheduleJob.calledWith(implementations.config.usageAPI.schedule));
                         assert(spies.notifier.notifyAllUsage.calledTwice);
                         assert(spies.logger.error.calledWith('Error while notifying the accounting: ' + notifyErrCron));
+
+                        if (enableHttps) {
+                            assert(spies.fs.readFileSync.calledWith(implementations.config.accounting_proxy.https.certFile));
+                            assert(spies.fs.readFileSync.calledWith(implementations.config.accounting_proxy.https.keyFile));
+                            assert(spies.fs.readFileSync.calledWith(implementations.config.accounting_proxy.https.caFile));
+                            assert(spies.https.createServer.calledWith(options));
+                        }
+
                         assert(spies.app.get.calledWith('port'));
                         assert(spies.app.listen.calledWith(port));
 
@@ -176,37 +211,41 @@ describe('Testing Server', function () {
     describe('Function "initialize"', function () {
 
         it('should call the callback with error when db fails initializing', function (done) {
-            testInitAndStop(true, null, false, false, undefined, false, done);
+            testInitAndStop(true, null, false, false, undefined, false, false, done);
         });
 
         it('should call the callback with error when there is no accounting module for an accounting unit', function (done) {
-            testInitAndStop(false, 'wrong', false, false, undefined, false, done);
+            testInitAndStop(false, 'wrong', false, false, undefined, false, false, done);
         });
 
         it('should call the callback with error when there is an error notifying the usage', function (done) {
-            testInitAndStop(false, data.DEFAULT_UNIT, true, false, undefined, false, done);
+            testInitAndStop(false, data.DEFAULT_UNIT, true, false, undefined, false, false, done);
         });
 
-        it('should call the callback without error and initialize the proxy when there is no error initializing', function (done) {
-            testInitAndStop(false, data.DEFAULT_UNIT, false, true, undefined, false, done);
+        it('should call the callback without error and initialize the proxy when there is no error initializing over http', function (done) {
+            testInitAndStop(false, data.DEFAULT_UNIT, false, true, undefined, false, false, done);
+        });
+
+        it('should call the callback without error and initialize the proxy when there is no error initializing over https', function (done) {
+            testInitAndStop(false, data.DEFAULT_UNIT, false, true, undefined, false, true, done);
         });
     });
 
     describe('Function "stop"', function () {
 
         it('should call the callback with error when there is an error stopping the server', function (done) {
-            testInitAndStop(false, data.DEFAULT_UNIT, false, true, 'Error', false, done);
+            testInitAndStop(false, data.DEFAULT_UNIT, false, true, 'Error', false, false, done);
         });
 
         it('should call the callback without error when there is no error stopping the server', function (done) {
-            testInitAndStop(false, data.DEFAULT_UNIT, false, true, null, false, done);
+            testInitAndStop(false, data.DEFAULT_UNIT, false, true, null, false, false, done);
         });
     });
 
     describe('Function "getAccountingModules"', function () {
 
         it('should return the accounting modules when they have been loaded', function (done) {
-            testInitAndStop(false, data.DEFAULT_UNIT, false, true, undefined, true, done);
+            testInitAndStop(false, data.DEFAULT_UNIT, false, true, undefined, true, false, done);
         });
     });
 
@@ -253,7 +292,7 @@ describe('Testing Server', function () {
                     log: function (level, msg) {}
                 },
                 app: {
-                    use: function (path, middleqare1, middleware2, handler) {
+                    use: function (path, middleware1, middleware2, handler) {
                         if (path === '/') {
                             middleware2(implementations.req, implementations.res, function () {});
                             handler(implementations.req, implementations.res);
