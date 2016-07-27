@@ -24,7 +24,8 @@ var data = {
     DEFAULT_EXPIRES: '2016-10-10T14:00:00.00Z',
     DEFAULT_IS_CB_SERVICE: true,
     DEFAULT_IS_NOT_CB_SERVICE: false,
-    DEFAULT_HTTP_METHODS_LIST: ['GET', 'POST', 'PUT', 'DELETE']
+    DEFAULT_HTTP_METHODS_LIST: ['GET', 'POST', 'PUT', 'DELETE'],
+    DEFAULT_ELAPSED_TIME: 35
 };
 
 data.DEFAULT_HTTP_METHODS_STRING = data.DEFAULT_HTTP_METHODS_LIST.join(',');
@@ -40,7 +41,6 @@ data.DEFAULT_SUBSCRIPTION_v1 = {
     subscriptionId: data.DEFAULT_SUBS_ID,
     unit: data.DEFAULT_UNIT,
     notificationUrl: data.DEFAULT_URLS[0],
-    expires: null,
     version: 'v1'
 };
 
@@ -49,7 +49,6 @@ data.DEFAULT_SUBSCRIPTION_v2 = {
     subscriptionId: data.DEFAULT_SUBS_ID,
     unit: data.DEFAULT_UNIT,
     notificationUrl: data.DEFAULT_URLS[0],
-    expires: data.DEFAULT_EXPIRES,
     version: 'v2'
 };
 
