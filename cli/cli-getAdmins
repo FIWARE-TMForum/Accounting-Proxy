@@ -18,38 +18,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Binds the specified administrator to the service specified by its public path.
+// Displays all the administrators for the specified service.
 
 var program = require('commander'),
-    config = require('./config'),
-    logger = require('./log'),
-    util = require('./util');
+    config = require('./../config'),
+    logger = require('./../log')
+    util = require('./../util');
 
 var db = require(config.database.type);
 
 program
-    .description('Adds the specified administrator to the service specified by the public path.')
+    .description('Displays all the administrators for the specified service.')
     .parse(process.argv);
 
-if (program.args.length !== 2) {
-    logger.error('Invalid number of arguments. Usage: ./cli bindAdmin <userId> <publicPath>');
+if (program.args.length !== 1) {
+    logger.error('Invalid number of arguments. Usage: ./cli getAdmins <publicPath>');
     console.log(program.help());
 
 } else {
 
-    var userId = program.args[0];
-    var publicPath = program.args[1];
+    var publicPath = program.args[0];
 
     if (!util.pathRegExp.test(publicPath)) {
         logger.error(util.invalidPathError);
 
-    } else {
+    } else { 
 
-        db.bindAdmin(userId, publicPath, function(err) {
+        db.getAdmins(publicPath, function(err, admins) {
             if (err) {
                 logger.error(err);
+
+            } else if (admins.length === 0) {
+                logger.info('No administrators available for the service ' + publicPath);
+
             } else {
-                logger.info('Admin ' + userId + ' added to service ' + publicPath);
+                console.log('SERVICE: ' + publicPath + ' ADMINISTRATORS:');
+                for (var i = 0; i < admins.length; i++) {
+                    console.log('   ' + admins[i]);
+                }
             }
         });
     }

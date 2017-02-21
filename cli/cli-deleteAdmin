@@ -18,40 +18,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Deletes the service associated with the public path passed.
+// Deletes the administrator specified.
 
-var util = require('./util'),
-    program = require('commander'),
-    config = require('./config'),
-    logger = require('./log');
+var program = require('commander'),
+    config = require('./../config'),
+    logger = require('./../log');
+
+program
+    .description('Deletes the specified administrator.')
+    .parse(process.argv);
 
 var db = require(config.database.type);
 
-program
-    .description('Deletes the service associated with the public path.')
-    .parse(process.argv);
-
 if (program.args.length !== 1) {
-    logger.error('Invalid number of arguments. Usage: ./cli deleteService <publicPath>');
+    logger.error('Usage: ./cli deleteAdmin "userId"');
     console.log(program.help());
 
 } else {
 
-    var publicPath = program.args[0];
+    var userId = program.args[0];
 
-    if (!util.pathRegExp.test(publicPath)) {
-        logger.error(util.invalidPathError);
+    db.deleteAdmin(userId, function(err) {
 
-    } else {
+        if (err) {
+            logger.error(err);
 
-        db.deleteService(publicPath, function(err) {
-
-            if (err) {
-                logger.error(err);
-
-            } else {
-                logger.info('Service ' + publicPath + ' deleted.')
-            }
-        });
-    }
+        } else {
+            logger.info('Deleted admin: ' + userId);
+        }
+    });
 }

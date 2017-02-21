@@ -19,8 +19,9 @@
  */
 
 var async = require('async'),
-    config = require('./config'),
-    program = require('commander');
+    config = require('./../config'),
+    program = require('commander'),
+    logger = require('./../log');
 
 var db = require(config.database.type);
 

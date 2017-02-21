@@ -20,10 +20,10 @@
 
 // Adds a new service; map the public path with the service URL and the application Id.
 
-var util = require('./util'),
+var util = require('./../util'),
     program = require('commander'),
-    config = require('./config'),
-    logger = require('./log');
+    config = require('./../config'),
+    logger = require('./../log');
 
 var db = require(config.database.type);
 var urlRegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)(\/|\/([\w#!:.?+=&%@!\-\/]))?/;

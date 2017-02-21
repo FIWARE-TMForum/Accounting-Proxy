@@ -20,9 +20,9 @@
 // Unbinds the specified administrator from the specified service identified by its public path.
 
 var program = require('commander'),
-    config = require('./config'),
-    logger = require('./log')
-    util = require('./util');
+    config = require('./../config'),
+    logger = require('./../log'),
+    util = require('./../util');
 
 var db = require(config.database.type);
 
