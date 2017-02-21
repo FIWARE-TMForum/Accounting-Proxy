@@ -18,7 +18,7 @@
 
 var request = require('supertest'),
     assert = require('assert'),
-    proxyquire = require('proxyquire'),
+    proxyquire = require('proxyquire').noCallThru(),
     testEndpoint = require('./test_endpoint'),
     async = require('async'),
     testConfig = require('../config_tests').integration,
@@ -45,6 +45,7 @@ var configMock = util.getConfigMock(false, false);
 var mocker = function (database, done) {
 
     var authenticationMock, accounterMock;
+    configMock.getConfigPath = require('../../config').getConfigPath;
 
     if (database === 'sql') {
 
@@ -61,7 +62,7 @@ var mocker = function (database, done) {
         var redis_port = testConfig.redis_port;
 
         if (! redis_host || ! redis_port) {
-            done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
+            return done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
         } else {
 
             configMock.database.type = '../lib/db/db_Redis';
@@ -74,6 +75,10 @@ var mocker = function (database, done) {
             });
         }
     }
+
+    configMock.getDatabase = function () {
+        return db;
+    };
 
     authenticationMock = proxyquire('../../lib/OAuth2_authentication', {
         'passport-fiware-oauth': FIWAREStrategyMock,

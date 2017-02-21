@@ -97,7 +97,7 @@ var deleteSubscription = function (req, res) {
 
 var updateSubscription = function (req, res) {
     res.status(204).send();  
-}
+};
 
 var usageSpecificationHandler = function (req, res) {
     if (req.body.name === 'call') {

@@ -132,5 +132,9 @@ config.getDatabase = function () {
     return require(config.database.type);
 };
 
+config.getConfigPath = function () {
+    return __dirname;
+};
+
 module.exports = config;
 

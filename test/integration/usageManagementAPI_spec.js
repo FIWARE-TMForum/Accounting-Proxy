@@ -24,7 +24,7 @@ var assert = require('assert'),
     data = require('../data'),
     util = require('../util');
 
-var server, db, notifierMock;
+var server, db;
 var databaseName = 'testDB_usageAPI.sqlite';
 
 var configMock = util.getConfigMock(false, false);
@@ -41,6 +41,7 @@ var appMock = {
 var mocker = function (database, done) {
 
     var notifierMock;
+    configMock.getConfigPath = require('../../config').getConfigPath;
 
     if (database === 'sql') {
 
@@ -57,7 +58,7 @@ var mocker = function (database, done) {
         var redis_port = testConfig.redis_port;
 
         if (! redis_host || ! redis_port) {
-            done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".')
+            return done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".')
         } else {
 
             configMock.database.type = './lib/db/db_Redis';
@@ -71,8 +72,12 @@ var mocker = function (database, done) {
         }
     }
 
+    configMock.getDatabase = function () {
+        return db;
+    };
+
     notifierMock = proxyquire('../../lib/notifier', {
-        '../config': configMock,
+        './../config': configMock,
         'winston': util.logMock
     });
 
@@ -87,7 +92,7 @@ var mocker = function (database, done) {
     db.init(done);
 };
 
-// Start the enpoint for testing
+// Start the endpoint for testing
 before(function () {
     usageAPIMock.run();
 });
@@ -178,7 +183,6 @@ describe('Testing the usage notifier', function () {
                     path: ''
                 };
 
-                var publicPath = data.DEFAULT_PUBLIC_PATHS[0];
                 var apiKey = data.DEFAULT_API_KEYS[0];
                 var service = data.DEFAULT_SERVICES_LIST[0];
                 var buy = data.DEFAULT_BUY_INFORMATION[0];
@@ -191,7 +195,6 @@ describe('Testing the usage notifier', function () {
                     if (err) {
                         done(err);
                     } else {
-
                         server.init(function (err) {
                             assert.equal(err, 'Error starting the accounting-proxy. Error sending the Specification: ENOTFOUND');
                             done();

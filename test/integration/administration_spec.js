@@ -18,7 +18,7 @@
 
 var request = require('supertest'),
     assert = require('assert'),
-    proxyquire = require('proxyquire'),
+    proxyquire = require('proxyquire').noCallThru(),
     test_config = require('../config_tests').integration,
     testEndpoint = require('./test_endpoint'),
     testUtil = require('../util'),
@@ -42,6 +42,7 @@ var FIWAREStrategyMock = testUtil.getStrategyMock(userProfile);
 var mocker = function (database, done) {
 
     var authentication, apiServer, notifier, cbHandler, util;
+    configMock.getConfigPath = require('../../config').getConfigPath;
 
     if (database === 'sql') {
 
@@ -58,7 +59,7 @@ var mocker = function (database, done) {
         var redis_port = test_config.redis_port;
 
         if (! redis_host || ! redis_port) {
-            done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
+            return done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
         } else {
 
             configMock.database.type = './lib/db/db_Redis';
@@ -72,6 +73,10 @@ var mocker = function (database, done) {
         }
 
     }
+
+    configMock.getDatabase = function () {
+        return db;
+    };
 
     authentication = proxyquire('../../lib/OAuth2_authentication', {
         'passport-fiware-oauth': FIWAREStrategyMock,
@@ -189,10 +194,9 @@ describe('Testing the administration API', function (done) {
             // Clear the database and mock dependencies
             beforeEach(function (done) {
                 this.timeout(5000);
-
                 testUtil.clearDatabase(database, databaseName, function (err) {
                     if (err) {
-                        done(err);
+                        done(err)
                     } else {
                         mocker(database, done);
                     }
@@ -236,7 +240,7 @@ describe('Testing the administration API', function (done) {
                     testAuthentication(path, 'get', token, 401, expectedResp, done);
                 });
 
-                it('should return 200 when there is no API key avilable', function (done) {
+                it('should return 200 when there is no API key available', function (done) {
                     var token = 'bearer ' + userProfile.token;
 
                     testAuthentication(path, 'get', token, 200, [], done);

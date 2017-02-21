@@ -57,13 +57,16 @@ var loadAccountingModules = function (callback) {
         } catch (e) {
             taskCallback('No accounting module for unit "' + unit + '" : missing file acc_modules/' + unit + '.js');
         }
-    }, callback);
+    }, function (err) {
+        callback(err);
+    });
 };
 
 /**
  * Start and configure the server.
  */
 exports.init = function (callback) {
+
     async.series([
         function (callback) {
             db.init(callback);

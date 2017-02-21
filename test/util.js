@@ -22,7 +22,8 @@ var async = require('async'),
 	redis = require('redis'),
     testConfig = require('./config_tests').integration,
     fs = require('fs'),
-    data = require('./data');
+    data = require('./data'),
+    config = require('./../config.js');
 
 var dbMock;
 
@@ -268,9 +269,11 @@ exports.checkUsageSpecifications = function (db, units, hrefs, callback) {
 // Flush the database specified
 exports.clearDatabase = function (database, name, callback) {
     if (database === 'sql') {
-        fs.access('./' + name, fs.F_OK, function (err) {
+        var file_name = config.getConfigPath() + '/' + name;
+
+        fs.access(file_name, fs.F_OK, function (err) {
             if (!err) {
-                fs.unlink('./' + name, callback);
+                fs.unlink(file_name, callback);
             } else {
                 return callback(null); // not exists
             }
