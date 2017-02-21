@@ -29,16 +29,18 @@ var mocker = function(implementations, callback) {
 
         var config = implementations.config ? implementations.config : {};
         config.database = {
-            type: './db'
+            type: './lib/db/db'
+        };
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
         };
 
         var api_server = proxyquire('../../APIServer', {
             './config': config,
-            './db': implementations.db ? implementations.db : {},
             url: implementations.url ? implementations.url : {},
             winston: implementations.logger ? implementations.logger : {},
-            './validation': implementations.validation ? implementations.validation : {},
-            './notifier': implementations.notifier ? implementations.notifier : {},
+            './lib/schema/validation': implementations.validation ? implementations.validation : {},
+            './lib/notifier': implementations.notifier ? implementations.notifier : {},
             'crypto': implementations.crypto ? implementations.crypto : {},
             './orion_context_broker/cbHandler': implementations.cbHandler ? implementations.cbHandler : {}
         });

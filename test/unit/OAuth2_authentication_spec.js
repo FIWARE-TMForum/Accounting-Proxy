@@ -35,13 +35,15 @@ var mocker = function (implementations, callback) {
 
         var config = implementations.config ? implementations.config : {};
         config.database = {
-            type: './db'
+            type: './lib/db/db'
+        };
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
         };
 
-        var authentication = proxyquire('../../OAuth2_authentication', {
-            './config': config,
+        var authentication = proxyquire('../../lib/OAuth2_authentication', {
+            './../config': config,
             winston: implementations.logger ? implementations.logger : {},
-            './db': implementations.db ? implementations.db : {},
             'passport-fiware-oauth': implementations.passport ? implementations.passport : defaultPassport 
         });
 

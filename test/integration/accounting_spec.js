@@ -48,33 +48,11 @@ var mocker = function (database, done) {
 
     if (database === 'sql') {
 
-        configMock.database.type = './db';
+        configMock.database.type = './lib/db/db';
         configMock.database.name = databaseName;
 
-        db = proxyquire('../../db', {
-            './config': configMock
-        });
-
-        authenticationMock = proxyquire('../../OAuth2_authentication', {
-            'passport-fiware-oauth': FIWAREStrategyMock,
-            './config': configMock,
-            'winston': util.logMock,
-            './db': db
-        });
-
-        accounterMock = proxyquire('../../accounter', {
-            './config': configMock,
-            './db': db
-        });
-
-        server = proxyquire('../../server', {
-            './config': configMock,
-            './db': db,
-            'winston': util.logMock, // Not display logger messages while testing,
-            'express-winston': util.expressWinstonMock,
-            './OAuth2_authentication': authenticationMock,
-            './accounter': accounterMock,
-            './notifier': util.notifierMock
+        db = proxyquire('../../lib/db/db', {
+            './../../config': configMock
         });
 
     } else {
@@ -86,38 +64,35 @@ var mocker = function (database, done) {
             done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
         } else {
 
-            configMock.database.type = './db_Redis';
+            configMock.database.type = '../lib/db/db_Redis';
             configMock.database.name = testConfig.redis_database;
             configMock.database.redis_host = redis_host;
             configMock.database.redis_port = redis_port;
 
-            db = proxyquire('../../db_Redis', {
-                './config': configMock
-            });
-
-            authenticationMock = proxyquire('../../OAuth2_authentication', {
-                'passport-fiware-oauth': FIWAREStrategyMock,
-                './config': configMock,
-                'winston': util.logMock,
-                './db_Redis': db
-            });
-
-            accounterMock = proxyquire('../../accounter', {
-                './config': configMock,
-                './db_Redis': db
-            });
-
-            server = proxyquire('../../server', {
-                './config': configMock,
-                './db_Redis': db,
-                'winston': util.logMock, // Not display logger messages while testing,
-                'express-winston': util.expressWinstonMock,
-                './OAuth2_authentication': authenticationMock,
-                './accounter': accounterMock,
-                './notifier': util.notifierMock
+            db = proxyquire('../../lib/db/db_Redis', {
+                './../../config': configMock
             });
         }
     }
+
+    authenticationMock = proxyquire('../../lib/OAuth2_authentication', {
+        'passport-fiware-oauth': FIWAREStrategyMock,
+        './../config': configMock,
+        'winston': util.logMock
+    });
+
+    accounterMock = proxyquire('../../lib/accounter', {
+        './../config': configMock
+    });
+
+    server = proxyquire('../../server', {
+        './config': configMock,
+        'winston': util.logMock, // Not display logger messages while testing,
+        'express-winston': util.expressWinstonMock,
+        './lib/OAuth2_authentication': authenticationMock,
+        './lib/accounter': accounterMock,
+        './lib/notifier': util.notifierMock
+    });
 
     server.init(done);
 };

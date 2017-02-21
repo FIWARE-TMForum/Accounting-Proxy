@@ -44,27 +44,13 @@ var mocker = function (database, done) {
 
     if (database === 'sql') {
 
-        configMock.database.type = './db';
+        configMock.database.type = './lib/db/db';
         configMock.database.name = databaseName;
 
-        db = proxyquire('../../db', {
-            './config': configMock
+        db = proxyquire('../../lib/db/db', {
+            './../../config': configMock
         });
 
-        notifierMock = proxyquire('../../notifier', {
-            './config': configMock,
-            'winston': util.logMock,
-            './db': db
-        });
-
-        server = proxyquire('../../server', {
-            express: function () {
-                return appMock;
-            },
-            './config': configMock,
-            './db': db,
-            './notifier': notifierMock
-        });
     } else {
 
         var redis_host = testConfig.redis_host;
@@ -74,31 +60,29 @@ var mocker = function (database, done) {
             done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".')
         } else {
 
-            configMock.database.type = './db_Redis';
+            configMock.database.type = './lib/db/db_Redis';
             configMock.database.name = testConfig.redis_database;
             configMock.database.redis_host = redis_host;
             configMock.database.redis_port = redis_port;
 
-            db = proxyquire('../../db_Redis', {
-                './config': configMock
-            });
-
-            notifierMock = proxyquire('../../notifier', {
-                './config': configMock,
-                'winston': util.logMock,
-                './db_Redis': db
-            });
-
-            server = proxyquire('../../server', {
-                express: function () {
-                    return appMock;
-                },
-                './config': configMock,
-                '.db_Redis': db,
-                './notifier': notifierMock
+            db = proxyquire('../../lib/db/db_Redis', {
+                './../../config': configMock
             });
         }
     }
+
+    notifierMock = proxyquire('../../lib/notifier', {
+        '../config': configMock,
+        'winston': util.logMock
+    });
+
+    server = proxyquire('../../server', {
+        express: function () {
+            return appMock;
+        },
+        './config': configMock,
+        './lib/notifier': notifierMock
+    });
 
     db.init(done);
 };

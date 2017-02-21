@@ -20,11 +20,12 @@ var async = require('async'),
     cbHandler = require('./orion_context_broker/cbHandler'),
     config = require('./config'),
     crypto = require('crypto'),
-    db = require(config.database.type),
     logger = require('winston'),
-    notifier = require('./notifier'),
+    notifier = require('./lib/notifier'),
     url = require('url'),
-    validation = require('./validation');
+    validation = require('./lib/schema/validation');
+
+var db = config.getDatabase();
 
 "use strict";
 

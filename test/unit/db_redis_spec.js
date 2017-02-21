@@ -44,7 +44,7 @@ var getDb = function (implementations) {
         forEachOf: async.forEachOf
     };
 
-    return proxyquire('../../db_Redis', {
+    return proxyquire('../../lib/db/db_Redis', {
         redis: redis_stub,
         async: async_stub
     });

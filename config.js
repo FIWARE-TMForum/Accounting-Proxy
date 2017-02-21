@@ -25,10 +25,10 @@ config.database = {
 
     /**
      * Select the database. Possible optrions are:
-     *     './db_Redis': redis database.
-     *     './db': sqlite database.
+     *     './lib/db/db_Redis': redis database.
+     *     './lib/db/db': sqlite database.
      */
-    type: './db',
+    type: './lib/db/db',
 
     /**
      * Database name. If the database type selected is './db_Redis',
@@ -128,4 +128,9 @@ config.log = {
     file: './log/all-log'
 };
 
+config.getDatabase = function () {
+    return require(config.database.type);
+};
+
 module.exports = config;
+

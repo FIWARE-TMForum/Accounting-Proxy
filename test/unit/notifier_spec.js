@@ -34,16 +34,18 @@ var mocker = function (implementations, callback) {
 
         var config = implementations.config ? implementations.config : {};
         config.database = {
-            type: './db'
+            type: './lib/db/db'
+        };
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
         };
 
         // Mock dependencies
-        var notifier = proxyquire('../../notifier', {
-            './config': config,
-            './db': implementations.db ? implementations.db : {},
+        var notifier = proxyquire('../../lib/notifier', {
+            './../config': config,
             request: implementations.requester ? implementations.requester.request : {},
             winston: implementations.logger ? implementations.logger : {},
-            './server': implementations.server ? implementations.server : {},
+            './../server': implementations.server ? implementations.server : {}
         });
 
         return callback(notifier, spies);

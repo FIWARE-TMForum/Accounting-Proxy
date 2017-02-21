@@ -42,61 +42,17 @@ var DEFAULT_TYPE = data.DEFAULT_IS_CB_SERVICE;
 
 var configMock = util.getConfigMock(true, false);
 
-var mocker = function (database,done) {
+var mocker = function (database, done) {
 
     var authenticationMock, accounterMock, cbHandlerMock, orionModuleV1Mock, orionModuleV2Mock;
 
     if (database === 'sql') {
 
-        configMock.database.type = './db';
+        configMock.database.type = './lib/db/db';
         configMock.database.name = databaseName;
 
-        db = proxyquire('../../db', {
-            './config': configMock
-        });
-
-        authenticationMock = proxyquire('../../OAuth2_authentication', {
-            'passport-fiware-oauth': FIWAREStrategy_mock,
-            './config': configMock,
-            'winston': util.logMock,
-            './db': db
-        });
-
-        accounterMock = proxyquire('../../accounter', {
-            './config': configMock,
-            './db': db
-        });
-
-        orionModuleV1Mock = proxyquire('../../orion_context_broker/orionModule_v1', {
-            '../config': configMock,
-            '.././db': db,
-            '../accounter': accounterMock
-        });
-
-        orionModuleV2Mock = proxyquire('../../orion_context_broker/orionModule_v2', {
-            '../config': configMock,
-            '.././db': db,
-            '../accounter': accounterMock
-        });
-
-        cbHandlerMock = proxyquire('../../orion_context_broker/cbHandler', {
-            '../config': configMock,
-            'winston': util.logMock,
-            '.././db': db,
-            '../accounter': accounterMock,
-            './orionModule_v1': orionModuleV1Mock,
-            './orionModule_v2': orionModuleV2Mock
-        });
-
-        server = proxyquire('../../server', {
-            './config': configMock,
-            './db': db,
-            'winston': util.logMock, // Not display logger messages while testing
-            'express-winston': util.expressWinstonMock,
-            './accounter': accounterMock,
-            './orion_context_broker/cbHandler': cbHandlerMock,
-            './OAuth2_authentication': authenticationMock,
-            './notifier': util.notifierMock
+        db = proxyquire('../../lib/db/db', {
+            './../../config': configMock
         });
 
     } else {
@@ -105,64 +61,62 @@ var mocker = function (database,done) {
         var redis_port = testConfig.redis_port;
 
         if (! redis_host || ! redis_port) {
-            console.log('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".')
+            console.log('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
             process.exit(1);
         } else {
 
-            configMock.database.type = './db_Redis';
+            configMock.database.type = './lib/db/db_Redis';
             configMock.database.name = testConfig.redis_database;
             configMock.database.redis_host = redis_host;
             configMock.database.redis_port = redis_port;
 
-            db = proxyquire('../../db_Redis', {
-                './config': configMock
-            });
-
-            authenticationMock = proxyquire('../../OAuth2_authentication', {
-                'passport-fiware-oauth': FIWAREStrategy_mock,
-                './config': configMock,
-                'winston': util.logMock,
-                './db_Redis': db
-            });
-
-            accounterMock = proxyquire('../../accounter', {
-                './config': configMock,
-                './db_Redis': db
-            });
-
-            orionModuleV1Mock = proxyquire('../../orion_context_broker/orionModule_v1', {
-                '../config': configMock,
-                '.././db_Redis': db,
-                '../accounter': accounterMock
-            });
-
-            orionModuleV2Mock = proxyquire('../../orion_context_broker/orionModule_v2', {
-                '../config': configMock,
-                '.././db_Redis': db,
-                '../accounter': accounterMock
-            });
-
-            cbHandlerMock = proxyquire('../../orion_context_broker/cbHandler', {
-                '../config': configMock,
-                'winston': util.logMock,
-                '../accounter': accounterMock,
-                '.././db_Redis': db,
-                './orionModule_v1': orionModuleV1Mock,
-                './orionModule_v2': orionModuleV2Mock
-            });
-
-            server = proxyquire('../../server', {
-                './config': configMock,
-                './db_Redis': db,
-                'winston': util.logMock, // Not display logger messages while testing
-                'express-winston': util.expressWinstonMock,
-                './accounter': accounterMock,
-                './orion_context_broker/cbHandler': cbHandlerMock,
-                './OAuth2_authentication': authenticationMock,
-                './notifier': util.notifierMock
+            db = proxyquire('../../lib/db/db_Redis', {
+                './../../config': configMock
             });
         }
     }
+
+    configMock.getDatabase = function () {
+        return db;
+    };
+
+    authenticationMock = proxyquire('../../lib/OAuth2_authentication', {
+        'passport-fiware-oauth': FIWAREStrategy_mock,
+        './../config': configMock,
+        'winston': util.logMock
+    });
+
+    accounterMock = proxyquire('../../lib/accounter', {
+        './../config': configMock
+    });
+
+    orionModuleV1Mock = proxyquire('../../orion_context_broker/orionModule_v1', {
+        '../config': configMock,
+        '../lib/accounter': accounterMock
+    });
+
+    orionModuleV2Mock = proxyquire('../../orion_context_broker/orionModule_v2', {
+        '../config': configMock,
+        '../lib/accounter': accounterMock
+    });
+
+    cbHandlerMock = proxyquire('../../orion_context_broker/cbHandler', {
+        '../config': configMock,
+        'winston': util.logMock,
+        '../lib/accounter': accounterMock,
+        './orionModule_v1': orionModuleV1Mock,
+        './orionModule_v2': orionModuleV2Mock
+    });
+
+    server = proxyquire('../../server', {
+        './config': configMock,
+        'winston': util.logMock, // Not display logger messages while testing
+        'express-winston': util.expressWinstonMock,
+        './lib/accounter': accounterMock,
+        './orion_context_broker/cbHandler': cbHandlerMock,
+        './OAuth2_authentication': authenticationMock,
+        './lib/notifier': util.notifierMock
+    });
 
     server.init(done);
 };

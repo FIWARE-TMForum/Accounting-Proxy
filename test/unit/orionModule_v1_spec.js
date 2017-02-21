@@ -33,12 +33,14 @@ var mocker = function (implementations, callback) {
         config.resources = {
             notification_port: data.DEFAULT_PORT
         };
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
+        };
 
         var orionModule = proxyquire('../../orion_context_broker/orionModule_v1', {
         	'request': implementations.requester ? implementations.requester.request : {},
         	'../config': config,
-        	'../accounter': implementations.accounter ? implementations.accounter : {},
-        	'.././db': implementations.db ? implementations.db : {},
+        	'../lib/accounter': implementations.accounter ? implementations.accounter : {},
             'url': implementations.url ? implementations.url : {}
         });
 

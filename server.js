@@ -24,19 +24,19 @@ var express = require('express'),
     url = require('url'),
     request = require('request'),
     logger = require('winston'),
-    accounter = require('./accounter'),
+    accounter = require('./lib/accounter'),
     cbHandler = require('./orion_context_broker/cbHandler'),
     cron = require('node-schedule'),
-    oauth2 = require('./OAuth2_authentication'),
-    notifier = require('./notifier'),
+    oauth2 = require('./lib/OAuth2_authentication'),
+    notifier = require('./lib/notifier'),
     expressWinston = require('express-winston'),
     https = require('https'),
     fs = require('fs'),
-    util = require('./util');
+    util = require('./lib/util');
 
 "use strict";
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 var app = express();
 var admin_paths = config.api.administration_paths;
 var accountingModules = {};
@@ -125,7 +125,7 @@ exports.getAccountingModules = function() {
 };
 
 /**
- * Auxiliar functon that handles ContextBroker request.
+ * Auxiliar function that handles ContextBroker request.
  *
  * @param {Object} req      Incoming request.
  * @param {Object} res      Outgoing response.

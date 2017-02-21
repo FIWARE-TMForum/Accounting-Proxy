@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Accounting proxy for FIWARE GE services",
   "main": "accounting-proxy.js",
-  "author": "FI-WARE",
+  "author": "UPM",
+  "license": "AGPL-3.0",
   "keywords": [
     "proxy",
     "accounting",

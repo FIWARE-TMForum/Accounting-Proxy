@@ -25,7 +25,7 @@ var proxyquire = require('proxyquire').noCallThru(),
 
 var DEFAULT_CONFIG = {
     database: {
-        type: './db'
+        type: './lib/db/db'
     },
     accounting_proxy: {
         port: 9000
@@ -44,12 +44,16 @@ var mocker = function (implementations, callback) {
 
         // Add default configuration
         var config = implementations.config ? implementations.config : DEFAULT_CONFIG;
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
+        };
+
         if (implementations.config) {
             for (var key in DEFAULT_CONFIG) {
                 if (config[key] === undefined) {
                     config[key] = DEFAULT_CONFIG[key]
                 }
-            };
+            }
         }
 
         var app = implementations.app ? implementations.app : {};
@@ -78,25 +82,24 @@ var mocker = function (implementations, callback) {
             },
             request: implementations.requester ? implementations.requester.request : {},
             './config': config,
-            './db': implementations.db ? implementations.db : {},
             './APIServer': implementations.api ? implementations.api : {},
             'winston': logger,
-            './notifier': implementations.notifier ? implementations.notifier : {},
+            './lib/notifier': implementations.notifier ? implementations.notifier : {},
             'node-schedule': implementations.cron ? implementations.cron : {},
             './acc_modules/megabyte': implementations.accModule ? implementations.accModule : {},
             'url': implementations.url ? implementations.url : {},
             'express-winston': {logger: function (transports) {} },
             './orion_context_broker/cbHandler': implementations.contextBroker ? implementations.contextBroker : {},
-            './accounter': implementations.accounter ? implementations.accounter : {},
-            './OAuth2_authentication': implementations.authenticator ? implementations.authenticator : {},
+            './lib/accounter': implementations.accounter ? implementations.accounter : {},
+            './lib/OAuth2_authentication': implementations.authenticator ? implementations.authenticator : {},
             'https': implementations.https ? implementations.https : {},
             'fs': implementations.fs ? implementations.fs : {},
-            './util': utilMock
+            './lib/util': utilMock
         });
 
         return callback(server, spies);
     });
-}
+};
 
 describe('Testing Server', function () {
 

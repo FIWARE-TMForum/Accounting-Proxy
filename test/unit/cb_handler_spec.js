@@ -33,6 +33,9 @@ var mocker = function (implementations, callback) {
         config.resources = {
             notification_port: data.DEFAULT_PORT
         };
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
+        };
 
         var app = implementations.app ? implementations.app : {};
         app.use = app.use ? implementations.app.use : function (middleware, handler) {};
@@ -43,11 +46,10 @@ var mocker = function (implementations, callback) {
                 return app;
             },
             '../config': config,
-            '.././db': implementations.db ? implementations.db : {},
             request: implementations.requester ? implementations.requester.request : {},
             url: implementations.url ? implementations.url : {},
             './subsUrls': implementations.subsUrls ? implementations.subsUrls : {},
-            '../accounter': implementations.accounter ? implementations.accounter : {},
+            '../lib/accounter': implementations.accounter ? implementations.accounter : {},
             winston: implementations.logger ? implementations.logger: {},
             './orionModule_v1': implementations.orionModuleV1 ? implementations.orionModuleV1 : {},
             './orionModule_v2': implementations.orionModuleV2 ? implementations.orionModuleV2 : {}

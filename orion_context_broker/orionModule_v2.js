@@ -18,11 +18,11 @@
 
 var request = require('request'),
     config = require('../config'),
-    accounter = require('../accounter'),
+    accounter = require('../lib/accounter'),
     async = require('async'),
     url = require('url');
 
-var db = require('../' + config.database.type);
+var db = config.getDatabase();
 
 /**
  * Return the notification URL contained in the notification object.

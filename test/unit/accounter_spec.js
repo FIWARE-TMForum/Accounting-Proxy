@@ -23,12 +23,11 @@ var proxyquire = require('proxyquire').noCallThru(),
     data = require('../data');
 
 var getAccounter = function (implementations) {
-    return proxyquire('../../accounter', {
-        './server': implementations.server,
-        './config': implementations.config,
-        './db': implementations.db
+    return proxyquire('../../lib/accounter', {
+        './../server': implementations.server,
+        './../config': implementations.config
     });
-}
+};
 
 describe('Testing "Accounter"', function () {
 
@@ -58,7 +57,10 @@ describe('Testing "Accounter"', function () {
 
             var config = {
                 database: {
-                    type: './db'
+                    type: './lib/db/db'
+                },
+                getDatabase: function () {
+                    return db;
                 }
             };
 

@@ -21,9 +21,9 @@
 var async = require('async'),
     config = require('./../config'),
     program = require('commander'),
-    logger = require('./../log');
+    logger = require('./../lib/log');
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 
 db.init(function(err) {
 

@@ -28,18 +28,20 @@ var mocker = function (implementations, callback) {
 
         var config = implementations.config ? implementations.config : {};
         config.database = {
-            type: './db'
+            type: './lib/db/db'
         };
         config.resources = {
             notification_port: data.DEFAULT_PORT
+        };
+        config.getDatabase = function () {
+            return implementations.db ? implementations.db : {};
         };
 
         var orionModule = proxyquire('../../orion_context_broker/orionModule_v2', {
             'request': implementations.requester ? implementations.requester.request : {},
             '../config': config,
-            '../accounter': implementations.accounter ? implementations.accounter : {},
+            '../lib/accounter': implementations.accounter ? implementations.accounter : {},
             'moment': implementations.moment ? implementations.moment.moment : {},
-            '.././db': implementations.db ? implementations.db : {},
             'url': implementations.url ? implementations.url : {}
         });
 

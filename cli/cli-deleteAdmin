@@ -22,13 +22,13 @@
 
 var program = require('commander'),
     config = require('./../config'),
-    logger = require('./../log');
+    logger = require('./../lib/log');
 
 program
     .description('Deletes the specified administrator.')
     .parse(process.argv);
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 
 if (program.args.length !== 1) {
     logger.error('Usage: ./cli deleteAdmin "userId"');

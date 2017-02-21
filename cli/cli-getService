@@ -21,12 +21,12 @@
 // If public path is specified, it returns the service URL, the application Id and the type of service. otherwise,
 //  returns the information of all services.
 
-var util = require('./../util'),
+var util = require('./../lib/util'),
     program = require('commander'),
     config = require('./../config'),
-    logger = require('./../log');
+    logger = require('./../lib/log');
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 
 var printService = function (service) {
     var isCBService = service.isCBService === 0 ? 'no' : 'yes';

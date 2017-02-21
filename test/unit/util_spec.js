@@ -33,8 +33,8 @@ describe('Testing util', function () {
 				}
 			};
 
-			var util = proxyquire('../../util', {
-				'./config': configMock
+			var util = proxyquire('../../lib/util', {
+				'./../config': configMock
 			});
 
 			util.administrationPath(path, function (res) {
@@ -69,7 +69,7 @@ describe('Testing util', function () {
 
 			var onSpy = sinon.spy(reqMock, 'on');
 
-			var util = require('../../util');
+			var util = require('../../lib/util');
 
 			util.getBody(reqMock, {}, function () {
 				assert(onSpy.calledWith('data'));
@@ -109,8 +109,8 @@ describe('Testing util', function () {
 			var jsonSpy = sinon.spy(res, 'json');
 			var next = sinon.stub();
 
-			var util = proxyquire('../../util', {
-				'./config': configMock
+			var util = proxyquire('../../lib/util', {
+				'./../config': configMock
 			});
 
 			util.validateCert(req, res, next);

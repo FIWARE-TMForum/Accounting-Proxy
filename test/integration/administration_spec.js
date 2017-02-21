@@ -45,52 +45,13 @@ var mocker = function (database, done) {
 
     if (database === 'sql') {
 
-        configMock.database.type = './db';
+        configMock.database.type = './lib/db/db';
         configMock.database.name = databaseName;
 
-        db = proxyquire('../../db', {
-            './config': configMock
+        db = proxyquire('../../lib/db/db', {
+            './../../config': configMock
         });
 
-        authentication = proxyquire('../../OAuth2_authentication', {
-            'passport-fiware-oauth': FIWAREStrategyMock,
-            './config': configMock,
-            'winston': testUtil.logMock,
-            './db': db
-        });
-
-        notifier = proxyquire('../../notifier', {
-            './config': configMock,
-            'winston': testUtil.logMock,
-            './db': db
-        });
-
-        cbHandler = proxyquire('../../orion_context_broker/cbHandler', {
-            '../config': configMock
-        });
-
-        apiServer = proxyquire('../../APIServer', {
-            './config': configMock,
-            'winston': testUtil.logMock,
-            './db': db,
-            './notifier': notifier
-        });
-
-        util = proxyquire('../../util', {
-            './config': configMock
-        });
-
-        server = proxyquire('../../server', {
-            './config': configMock,
-            './db': db,
-            './APIServer': apiServer,
-            './OAuth2_authentication': authentication,
-            './notifier': notifier,
-            'winston': testUtil.logMock, // Not display logger messages while testing
-            'express-winston': testUtil.expressWinstonMock,
-            './orion_context_broker/cbHandler': cbHandler,
-            './util': util
-        });
     } else {
 
         var redis_host = test_config.redis_host;
@@ -100,61 +61,58 @@ var mocker = function (database, done) {
             done('Variable "redis_host" or "redis_port" are not defined in "config_tests.js".');
         } else {
 
-            configMock.database.type = './db_Redis';
+            configMock.database.type = './lib/db/db_Redis';
             configMock.database.name = test_config.redis_database;
             configMock.database.redis_host = redis_host;
             configMock.database.redis_port = redis_port;
 
-            db = proxyquire('../../db_Redis', {
-                './config': configMock
-            });
-
-            authentication = proxyquire('../../OAuth2_authentication', {
-                'passport-fiware-oauth': FIWAREStrategyMock,
-                './config': configMock,
-                'winston': testUtil.logMock,
-                './db_Redis': db
-            });
-
-            notifier = proxyquire('../../notifier', {
-                './config': configMock,
-                'winston': testUtil.logMock,
-                './db_Redis': db
-            });
-
-            apiServer = proxyquire('../../APIServer', {
-                './config': configMock,
-                'winston': testUtil.logMock,
-                './db_Redis': db,
-                './notifier': notifier
-            });
-
-            cbHandler = proxyquire('../../orion_context_broker/cbHandler', {
-                '../config': configMock
-            });
-
-            util = proxyquire('../../util', {
-                './config': configMock
-            });
-
-            server = proxyquire('../../server', {
-                './config': configMock,
-                './db_Redis': db,
-                './APIServer': apiServer,
-                './OAuth2_authentication': authentication,
-                './notifier': notifier,
-                'winston': testUtil.logMock, // Not display logger messages while testing
-                'express-winston': testUtil.expressWinstonMock,
-                './orion_context_broker/cbHandler': cbHandler,
-                './util': util
+            db = proxyquire('../../lib/db/db_Redis', {
+                './../../config': configMock
             });
         }
+
     }
+
+    authentication = proxyquire('../../lib/OAuth2_authentication', {
+        'passport-fiware-oauth': FIWAREStrategyMock,
+        './../config': configMock,
+        'winston': testUtil.logMock
+    });
+
+    notifier = proxyquire('../../lib/notifier', {
+        './../config': configMock,
+        'winston': testUtil.logMock
+    });
+
+    cbHandler = proxyquire('../../orion_context_broker/cbHandler', {
+        '../config': configMock
+    });
+
+    apiServer = proxyquire('../../APIServer', {
+        './config': configMock,
+        'winston': testUtil.logMock,
+        './lib/notifier': notifier
+    });
+
+    util = proxyquire('../../lib/util', {
+        './../config': configMock
+    });
+
+    server = proxyquire('../../server', {
+        './config': configMock,
+        './APIServer': apiServer,
+        './lib/OAuth2_authentication': authentication,
+        './lib/notifier': notifier,
+        'winston': testUtil.logMock, // Not display logger messages while testing
+        'express-winston': testUtil.expressWinstonMock,
+        './orion_context_broker/cbHandler': cbHandler,
+        './lib/util': util
+    });
 
     server.init(done);
 };
 
-// Start the enpoint for testing
+// Start the endpoint for testing
 before(function () {
     testEndpoint.run();
 });

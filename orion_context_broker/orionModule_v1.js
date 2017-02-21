@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var accounter = require('../accounter'),
+var accounter = require('../lib/accounter'),
     async = require('async'),
     config = require('../config'),
     request = require('request'),
     url = require('url');
 
-var db = require('../' + config.database.type);
+var db = config.getDatabase();
 
 /**
  * Save the subscription in the db and redirect the response to the user.

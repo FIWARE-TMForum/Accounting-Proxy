@@ -22,9 +22,9 @@
 
 var program = require('commander'),
     config = require('./../config'),
-    logger = require('./../log');
+    logger = require('./../lib/log');
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 
 program
     .description('Adds a new administrator.')

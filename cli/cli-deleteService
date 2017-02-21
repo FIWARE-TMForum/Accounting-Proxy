@@ -20,12 +20,12 @@
 
 // Deletes the service associated with the public path passed.
 
-var util = require('./../util'),
+var util = require('./../lib/util'),
     program = require('commander'),
     config = require('./../config'),
-    logger = require('./../log');
+    logger = require('./../lib/log');
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 
 program
     .description('Deletes the service associated with the public path.')

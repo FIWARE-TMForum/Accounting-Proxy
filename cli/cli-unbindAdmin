@@ -21,10 +21,10 @@
 
 var program = require('commander'),
     config = require('./../config'),
-    logger = require('./../log'),
-    util = require('./../util');
+    logger = require('./../lib/log'),
+    util = require('./../lib/util');
 
-var db = require(config.database.type);
+var db = config.getDatabase();
 
 program
     .description('Deletes the specified administrator for the specified service by its public path')

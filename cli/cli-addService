@@ -20,12 +20,13 @@
 
 // Adds a new service; map the public path with the service URL and the application Id.
 
-var util = require('./../util'),
+var util = require('./../lib/util'),
     program = require('commander'),
     config = require('./../config'),
-    logger = require('./../log');
+    logger = require('./../lib/log');
 
-var db = require(config.database.type);
+var db = config.getDatabase();
+
 var urlRegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 var httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'CONNECT', 'HEAD', 'TRACE'];
 

@@ -20,13 +20,13 @@ var request = require('request'),
     subsUrls = require('./subsUrls'),
     config = require('../config'),
     express = require('express'),
-    accounter = require('../accounter'),
+    accounter = require('../lib/accounter'),
     bodyParser = require('body-parser'),
     logger = require('winston'),
     async = require('async');
 
 var app = express();
-var db = require('../' + config.database.type);
+var db = config.getDatabase();
 
 var orionModules = {
     v1: require('./orionModule_v1'),

@@ -45,7 +45,7 @@ var getDb = function (implementations) {
         }
     };
 
-    var db =  proxyquire('../../db', {
+    var db =  proxyquire('../../lib/db/db', {
         sqlite3: sqlite_stub,
         'sqlite3-transactions': transaction_stub
     });

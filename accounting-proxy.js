@@ -18,7 +18,7 @@
 
 var mkdirp = require('mkdirp'),
     server = require('./server'),
-    logger = require('./log');
+    logger = require('./lib/log');
 
 // Create directory ./log if not exists
 mkdirp('./log', function (err) {
