@@ -4,9 +4,6 @@
 	* [Software requiremnts](#softwarerequirements)
 	* [Installation](#installation)
 * [Configuration](#configuration)
-	* [Basic configuration](#basicconfiguration)
-	* [Orion Context Broker Configuration](#orionconfiguration)
-	* [Customizing Accounting Proxy for other components](#customizeconfiguration)
 * [Authentication](#authentication)
 * [Authorization](#authorization)
 	* [Administrators](#administrators)
@@ -16,6 +13,7 @@
 * [Development](#development)
 	* [Accounting module](#accountingmodule)
 	* [Testing](#tests)
+* [License](#license)
 
 ## <a name="deployment"/> Deployment
 
@@ -33,19 +31,17 @@ npm install
 
 
 ## <a name="configuration"/> Configuration
-### <a name="basicconfiguration"/> Basic configuration
 
 All the Accounting Proxy configuration is stored in the `config.js` file in the root of the project folder.
 
-In order to have the accounting proxy running there are some information to fill:
-* `config.accounting_proxy`: the information of the accounting proxy itself.
-	- `https`: set this variable to undefined to start the service over HTTP.
-        - `enabled`: set this option to true to start the service over HTTPS and activate the certificate validation for some administration requests (see [Proxy API](#proxyapi)).
-        - `certFile`: path to the server certificate in PEM format.
-        - `keyFile`: path to the private key of the server.
-        - `caFile`: path to the CA file.
+* `config.accounting_proxy`: Basic information of the accounting proxy setup.
+	- `https`: HTTPS configuration. Leave this param as undefined if you want to deploy the proxy in HTTP
+        - `enabled`: Whether HTTPS is enabled. It also activates the certificate validation for some administration requests (see [Proxy API](#proxyapi)).
+        - `certFile`: Path to the server certificate in PEM format.
+        - `keyFile`: Path to the private key of the server.
+        - `caFile`: Path to the CA file.
 	
- - `port`: port where the accounting proxy server is listening.
+ - `port`: Port where the accounting proxy server is going to listen.
 ```
 {
 	https: {
@@ -58,37 +54,36 @@ In order to have the accounting proxy running there are some information to fill
 }
 ```
 
-* `config.database`: database configuration used by the proxy.
- - `type`: database type. Two possible options: `./db` (sqlite database) or `./db_Redis` (redis database).
- - `name`: database name. If the database type select is redis, then this field select the database (0 to 14; 15 is reserved for testing).
- - `redis_host`: redis database host.
- - `redis_port`: redis database port.
+* `config.database`: Database configuration.
+ - `type`: Database type. Two possible options: `./lib/db/db` (sqlite database) or `./lib/db/db_Redis` (redis database).
+ - `name`: Database name. If the database type select is redis, then this field select the database (0 to 14; 15 is reserved for testing).
+ - `redis_host`: Redis database host (Only needed for redis database).
+ - `redis_port`: Redis database port (Only needed for redis database).
 ```
 {
-	type: './db',
-    name: 'accountingDB.sqlite',
+	type: './lib/db/db_Redis',
+    name: 5,
     redis_host: 'localhost',
     redis_port: 6379
 }
 ```
 
-* `config.modules`:  an array of supported accounting modules for accounting in different ways. Possible options are:
-	- `call`: accounting incremented in one unit each time the user send a request.
-	- `megabyte`: count the response amount of data  (in megabytes) and add to the actual accounting.
-	- `millisecond`: count the request duration (in milliseconds) between the request sending and the response receiving from the service.
+* `config.modules`:  Array of supported accounting modules for accounting different data. Possible options are:
+	- `call`: Accounts the number of calls to the protected service
+	- `megabyte`: Accounts the amount of data (in megabytes) send of read from the protected service.
+	- `millisecond`: Accounts the requests duration (in milliseconds). In particular, the time between the request is sent to the service and the response is received
 ```
 {
 	accounting: [ 'call', 'megabyte', 'millisecond']
 }
 ```
-Other accounting modules can be implemented and added here (see  [Accounting module](#accountingmodule) ).
+Other accounting modules can be implemented and included in the proxy (see  [Accounting module](#accountingmodule) ).
 
-
-* `config.usageAPI`: the information of the usage management API where the usage specifications and the accounting information will be snet.
+* `config.usageAPI`: Information of the usage management API where the usage specifications and the accounting information will be sent.
 	- `host`: API host.
 	- `port`: API port.
-	- `path`: path for the usage management API.
-	- `schedule`: defines the daemon service schedule to notify the usage accounting info. The format is similar to the cron tab format:  "MINUTE HOUR DAY_OF_MONTH MONTH_OF_YEAR DAY_OF_WEEK YEAR (optional)". By the default, the usage notifications will be sent every day at 00:00.
+	- `path`: Path for the usage management API.
+	- `schedule`: Daemon service schedule to notify the usage accounting info. The format is similar to the cron tab format:  "MINUTE HOUR DAY_OF_MONTH MONTH_OF_YEAR DAY_OF_WEEK YEAR (optional)". By the default, the usage notifications will be sent every day at 00:00.
 ```
 {
 	host: 'localhost',
@@ -98,9 +93,14 @@ Other accounting modules can be implemented and added here (see  [Accounting mod
 }
 ```
 
-* `config.resources`: configuration of the resources accounted by the proxy.
-	- `contextBroker`: set this option to `true` if the resource accounted is an Orion Context Broker. Otherwise set this option to `false` (default value).
-	- `notification_port`: port where the accounting proxy is listening to subscription notifications from the Orion Context Broker (port 9002 by default).
+* `config.resources`: Configuration of the services accounted by the proxy. Despite the Accounting Proxy can be used to
+  monitor any API service, it has native support for monitoring an instance of Context Broker with
+  ([API v1](https://fiware-orion.readthedocs.io/en/develop/index.html) and [API v2](https://fiware-orion.readthedocs.io/en/develop/index.html))
+  in order to support the accounting of subscription notifications.
+	- `contextBroker`: Whether the resource accounted is an Orion Context Broker.  False by default
+	- `notification_port`: Port where the accounting proxy is listening to subscription notifications from the Orion 
+	Context Broker (port 9002 by default). This field is only used when the proxy is used for monitoring a Context Broker
+	instance.
 ```
 {
 	contextBroker: false,
@@ -108,7 +108,7 @@ Other accounting modules can be implemented and added here (see  [Accounting mod
 }
 ```
 
-* `config.api.administration_paths`: configuration of the administration paths. Default accounting paths are:
+* `config.api.administration_paths`: Configuration of the administration paths. Default accounting paths are:
 ```
 {
 	api: {
@@ -122,7 +122,7 @@ Other accounting modules can be implemented and added here (see  [Accounting mod
     }
 }
 ```
-* `config.oauth2.roles`: configuration of the OAuth2 roles. Default roles are:
+* `config.oauth2.roles`: Configuration of the OAuth2 roles. Default roles are:
 ```
 {
 	oauth2: {
@@ -135,45 +135,32 @@ Other accounting modules can be implemented and added here (see  [Accounting mod
 }
 ```
 
-### <a name="componentsconfiguration"/> Components configuration
--------------------------------
- The Accounting Proxy can proxied Orion Context Broker and other components by changing some configuration parameters.
- 
-#### <a name="orionconfiguration"/> Orion Context Broker configuration
-
-The Accounting Proxy supports Context Broker monitoring ([API v1](https://fiware-orion.readthedocs.io/en/develop/index.html) and [API v2](https://fiware-orion.readthedocs.io/en/develop/index.html)). In order to configure the Accounting Proxy working with Orion Context Broker, configure the `resources` section of `config.js` file in the root of the project folder.
-
-* `contextBroker`: set `true` this parameter.
-* `notification_port`: port where the accounting proxy server is listening to subscription notifications.
-```
-{
-		contextBroker: true,
-		notification_port: 9002
-}
-```
-
-#### <a name="customizeconfiguration"/> Customizing Accounting Proxy for other components
-
-In order to configure the Accounting Proxy working with other components just set to `false` the contextBroker option in the`config.js`:
-
-* `contextBroker`: set `false` this parameter to disable the Context Broker accounting.
-* The rest of information in `config.resources` is unnecessary in this case.
-
-
 ## <a name="authentication"/> Authentication
-The authentication process is based on OAuth2 v2 tokens. The Accounting-Proxy expects that all the requests have a header `x-auth-token` containing a valid access token from the IDM or a `authorization` header containing `bearer "token"` where token is a valid access token from the IDM.
+The authentication process is based on OAuth2 v2 tokens. The Accounting-Proxy expects that all the requests have a 
+header `x-auth-token`  or `Authorization`  containing `bearer "token"` both containing a valid access token 
+provided by the FIWARE IdM
 
 ## <a name="authorization"/> Authorization
-If the authentication process success, the Accounting-Proxy check the authorization. The Accounting-Proxy expects that all the requests have a header `X-API-KEY` containing a valid API-KEY corresponding to the requested service.
+If the authentication process success, the Accounting-Proxy check the authorization. The Accounting-Proxy expects that
+all the requests have a header `X-API-KEY` containing a valid API-KEY corresponding to the requested service. This
+header is used by the Accounting Proxy in order to determine the particular acquisition and the involved pricing 
+(monitored unit)
 
 ### <a name="administrators"/> Administrators
-If the user is an administrator of the service, the administrator request must omit the "X-API-KEY" header. After the administrator request is authenticated, the request will be redirected to the service and no accounting will be made.
+If the user is an administrator of the service, the administrator request must omit the "X-API-KEY" header. After the
+administrator request is authenticated, the request will be redirected to the service and no accounting will be made.
 
 ## <a name="accounting"/> Accounting
-The accounting proxy supports accounting based on different units and there is a module for each accounting unit. Developers can implement their own accounting modules (see section [Development](#development)). By default, all Accounting Proxy instances have three accounting modules:
-* `call`: accounting value incremented in one for each call to the service. If the Context Broker option is enabled, the accounting value will be incremented in one for each Context Broker notification.
-* `megabyte`: accounting value incremented based on the amount of data (in megabytes) retrieved from the service (in megabytes). If Context Broker option is enabled, the accounting value will be incremented based on the amount of data (in megabytes) sended by each Context Broker notification.
-* `millisecond`: accounting value incremented based on the request time (in milliseconds). If Context Broker option is enabled, the accounting value will be incremented based on the notification time (in milliseconds).
+The accounting proxy supports accounting based on different units and there is a module for each accounting unit.
+Developers can implement their own accounting modules (see section [Development](#development)). By default, all
+Accounting Proxy instances have three accounting modules:
+* `call`: The accounting value is incremented in one for each call to the service. If the Context Broker option is enabled,
+  the accounting value will be also incremented in one for each Context Broker notification.
+* `megabyte`: The accounting value is incremented based on the amount of data (in megabytes) retrieved from the service.
+  If Context Broker option is enabled, the accounting value will be also incremented based on the amount of data 
+  (in megabytes) sent in Context Broker notifications.
+* `millisecond`: The accounting value is incremented based on the request time (in milliseconds). If Context Broker 
+  option is enabled, the accounting value will be also incremented based on the notification time (in milliseconds).
 
 ## <a name="running"/> Running
 After [installation](#installation), just execute:
@@ -183,9 +170,11 @@ node accounting-proxy
 
 ## <a name="cli"/> CLI
 
-In order to manage servicies, use 'cli' tool. The available commands are:
+In order to manage services, the 'cli' tool has been provided. The available commands are:
 
-* `./cli addService [-c] <publicPath> <url> <appId> <httpMethod> [otherHttpMethods...]`: binds the public path with the url specified, the application ID (all request with an access token from a different application will be rejected) and the http method(s) specified. The public path valid patterns are the following:
+* `./cli addService [-c] <publicPath> <url> <appId> <httpMethod> [otherHttpMethods...]`: binds the public path with the 
+  url specified, the application ID (all request with an access token from a different application will be rejected) 
+  and the http method(s) specified. The public path valid patterns are the following:
 	-	`/publicPath`: only the first part of the path.
 	-	`/this/is/the/final/resource/path?color=Blue&shape=rectangular`: the complete resource path (absolute path). In this case, the proxy will use this path to make the request. Use this type of public paths to register URLs with query strings.
 For instance, a public path such as `/public/path` is not valid.
@@ -373,5 +362,13 @@ File `test/config_tests.js` contains the configuration for the integration tests
 
 Test reporter generates a directory `./coverage` with all the coverage information (coverage reporter is generated by Istanbul) and a xunit.xml file in the root directory of the project.
 
+* <a name="license">License
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+
 ---
-Last updated: _20/09/2016
+Last updated: _21/02/2017
